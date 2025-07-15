@@ -1,0 +1,192 @@
+#!/bin/bash
+
+# This script initializes Tor, retrieves the onion address,
+# sends it to a Discord webhook, generates an HTML page, and starts Caddy.
+
+# --- Configuration ---
+# Read Discord webhook URL from environment variable
+# If not set, default to an empty string (or a placeholder)
+DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}" # Use :- to default to empty if not set
+
+ONION_HOSTNAME_FILE="/var/lib/tor/hidden_service/hostname"
+HTML_DIR="/usr/share/caddy/html"
+HTML_FILE="${HTML_DIR}/index.html"
+
+# --- Start Tor ---
+echo "Starting Tor in the background..."
+# Run Tor as the debian-tor user, in the background, with the specified config file
+sudo -u debian-tor tor -f /etc/tor/torrc &
+TOR_PID=$! # Store Tor's process ID
+
+# --- Wait for Onion Address ---
+echo "Waiting for Tor hidden service to generate hostname..."
+# Loop until the hostname file exists and is not empty
+while [ ! -s "$ONION_HOSTNAME_FILE" ]; do
+    echo "Still waiting for ${ONION_HOSTNAME_FILE}..."
+    sleep 5 # Wait for 5 seconds before checking again
+done
+
+# Read the onion address from the file
+ONION_ADDRESS=$(cat "$ONION_HOSTNAME_FILE")
+echo "Tor hidden service address: ${ONION_ADDRESS}"
+
+# --- Send Onion Address to Discord Webhook ---
+echo "Sending onion address to Discord webhook..."
+# Check if the webhook URL is provided
+if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+    echo "WARNING: DISCORD_WEBHOOK_URL environment variable is not set. Skipping webhook notification."
+else
+    # Construct the JSON payload for the Discord webhook
+    JSON_PAYLOAD=$(jq -n \
+        --arg onion "$ONION_ADDRESS" \
+        '{content: "New Tor Hidden Service Address: \($onion)"}')
+
+    # Send the payload to the Discord webhook
+    curl -H "Content-Type: application/json" \
+         -X POST \
+         -d "$JSON_PAYLOAD" \
+         "$DISCORD_WEBHOOK_URL"
+    echo "Webhook sent."
+fi
+
+# --- Generate Keep-Alive HTML Page ---
+echo "Generating keep-alive HTML page..."
+cat <<EOF > "$HTML_FILE"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tor Hidden Service Status</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a202c; /* Dark background */
+            color: #e2e8f0; /* Light text */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #2d3748; /* Slightly lighter dark background */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #4299e1; /* Blue heading */
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .onion-link {
+            background-color: #4a5568; /* Darker grey for the link box */
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            color: #66ff66; /* Green for the onion link */
+            box-shadow: inset 0 0 8px rgba(0, 255, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        .copy-button {
+            background-color: #4299e1; /* Blue button */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .copy-button:hover {
+            background-color: #3182ce; /* Darker blue on hover */
+            transform: translateY(-2px);
+        }
+        .copy-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .message-box {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #2f855a; /* Green for success messages */
+            color: white;
+            border-radius: 8px;
+            display: none; /* Hidden by default */
+        }
+    </style>
+    <script>
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showMessage('Onion address copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showMessage('Failed to copy address. Please copy manually.', true);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Function to show a temporary message
+        function showMessage(msg, isError = false) {
+            const msgBox = document.getElementById('messageBox');
+            msgBox.textContent = msg;
+            msgBox.style.backgroundColor = isError ? '#c53030' : '#2f855a'; // Red for error, green for success
+            msgBox.style.display = 'block';
+            setTimeout(() => {
+                msgBox.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // Add event listener for the copy button
+        document.addEventListener('DOMContentLoaded', () => {
+            const copyBtn = document.getElementById('copyOnion');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    const onionLink = document.getElementById('onionLink').textContent;
+                    copyToClipboard(onionLink);
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Tor Hidden Service Active</h1>
+        <p>This container is running a Tor hidden service that proxies the following website:</p>
+        <p><a href="https://2305878273.7844380499.cfd" target="_blank" style="color: #63b3ed; text-decoration: none;">https://2305878273.7844380499.cfd</a></p>
+        <p>You can access it via the Tor network using the onion address below:</p>
+        <div class="onion-link" id="onionLink">${ONION_ADDRESS}</div>
+        <button id="copyOnion" class="copy-button">Copy Onion Address</button>
+        <div id="messageBox" class="message-box"></div>
+        <p>This page is also served on port 443 of the container.</p>
+    </div>
+</body>
+</html>
+EOF
+echo "HTML page generated at ${HTML_FILE}"
+
+# --- Start Caddy ---
+echo "Starting Caddy server..."
+# Caddy runs in the foreground, so this will keep the container alive
+exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
