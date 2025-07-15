@@ -2,33 +2,16 @@
 # This file defines how Tor should operate for this specific service.
 
 # --- Hidden Service Configuration ---
-# Specifies the directory where Tor will store its hidden service data,
-# including the private keys and the 'hostname' file containing the .onion address.
-# This directory must have strict permissions (700) and be owned by the 'debian-tor' user.
 HiddenServiceDir /var/lib/tor/hidden_service/
-
-# Defines a hidden service port mapping.
-# It maps the external port 80 of the .onion address to the internal
-# address and port (127.0.0.1:80) within the Docker container.
-# This means traffic arriving at the hidden service's port 80 will be
-# forwarded to Caddy, which is listening on 127.0.0.1:80 inside the container.
 HiddenServicePort 80 127.0.0.1:80
 
 # --- Logging Configuration ---
-# Sets the logging level to 'notice' and directs logs to a file.
-# This can be useful for debugging Tor's operation.
-# Other levels include 'debug', 'info', 'warn', 'err'.
 Log notice file /var/log/tor/notices.log
 
 # --- Bridge Configuration (for Circumvention/Obscurity) ---
-# Enables the use of Tor bridges. Bridges are unlisted Tor relays that help
-# users (or hidden services, in this case) connect to the Tor network
-# even if their internet service provider or government is trying to block direct Tor connections.
 UseBridges 1
 
-# Specifies the path to the webtunnel client executable.
-# This tells Tor where to find the pluggable transport to use webtunnel bridges.
-ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel-client
-
-# Bridge lines will be dynamically inserted here by the entrypoint.sh script
+# IMPORTANT: The ClientTransportPlugin and Bridge lines are intentionally
+# REMOVED from this file. They will be dynamically added by the entrypoint.sh script
 # based on the WEBTUNNEL_BRIDGES environment variable.
+# Do NOT put ClientTransportPlugin or Bridge lines directly in this torrc file.
