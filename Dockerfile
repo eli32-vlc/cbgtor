@@ -15,7 +15,7 @@ RUN apt-get update && \
 
 # Clone the WebTunnel repository and build the client binary
 WORKDIR /app/webtunnel
-RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/webtunnel.git .
+RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel.git .
 RUN go mod tidy
 # Build the client binary and place it in /usr/local/bin
 RUN go build -o /usr/local/bin/client ./webtunnel.go
