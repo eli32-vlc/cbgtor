@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # obfs4proxy is required for obfs4 bridges, jq for JSON processing in entrypoint.sh
 # ca-certificates for curl to properly verify SSL certificates
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl tor caddy sudo obfs4proxy jq ca-certificates && \
+    apt-get install -y --no-install-recommends curl tor caddy sudo obfs4proxy jq ca-certificates webtunnel && \
     rm -rf /var/lib/apt/lists/*
 
 # Create directory for Tor hidden service data and set permissions
