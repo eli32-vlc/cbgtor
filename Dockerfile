@@ -1,60 +1,40 @@
 FROM ubuntu:latest
 
-# Set environment variables
+# Avoid prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install required packages
-RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    gnupg2 \
-    apt-transport-https \
-    ca-certificates \
-    git \
-    build-essential \
-    golang \
-    tor \
+# Set environment variables for bridges (to be provided at runtime)
+ENV TOR_BRIDGE1=""
+ENV TOR_BRIDGE2=""
+ENV DISCORD_WEBHOOK_URL=""
+
+# Install minimal required packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
-    supervisor \
+    tor \
+    obfs4proxy \
+    ca-certificates \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up WebTunnel
-WORKDIR /opt
-RUN git clone https://gitlab.torproject.org/anti-censorship/pluggable-transports/webtunnel.git
-WORKDIR /opt/webtunnel
-RUN go build -o /usr/local/bin/webtunnel
+# Configure Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
 
-# Set up Tor configuration directory
-RUN mkdir -p /etc/tor/hidden_service
+# Configure Tor
+COPY torrc /etc/tor/torrc
 
-# Create the Tor configuration file
-RUN echo "UseBridges 1" > /etc/tor/torrc && \
-    echo "ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel" >> /etc/tor/torrc && \
-    echo "SocksPort 9050" >> /etc/tor/torrc && \
-    echo "Log notice stdout" >> /etc/tor/torrc && \
-    echo "DataDirectory /var/lib/tor" >> /etc/tor/torrc && \
-    echo "HiddenServiceDir /etc/tor/hidden_service/" >> /etc/tor/torrc && \
-    echo "HiddenServicePort 80 127.0.0.1:8080" >> /etc/tor/torrc && \
-    echo "# Bridge lines will be added at runtime" >> /etc/tor/torrc
+# Create a simple HTML page
+RUN mkdir -p /var/www/html
+COPY index.html /var/www/html/index.html
 
-# Set up Nginx configuration
-RUN rm /etc/nginx/sites-enabled/default
-COPY nginx.conf /etc/nginx/sites-available/proxy
-RUN ln -s /etc/nginx/sites-available/proxy /etc/nginx/sites-enabled/
-
-# Create script to update Tor configuration with bridges from environment variables
+# Create startup script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Create the keep-alive HTML page template
-COPY index.html.template /var/www/html/index.html.template
+# Expose ports
+EXPOSE 443 80
 
-# Set up Supervisor configuration
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Expose port 443
-EXPOSE 443
-
-# Start services using Supervisor
+# Start services
 CMD ["/start.sh"]
