@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Create directory structure with correct permissions
 RUN mkdir -p /var/lib/tor && \
-    mkdir -p /etc/webtunnel && \
+    mkdir -p /etc/webtunnel
     # DO NOT create hidden_service directory here - let Tor create it with correct permissions
 
 # Set up WebTunnel bridges file
@@ -46,7 +46,7 @@ RUN chmod +x /start.sh
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose ports
-EXPOSE 443
+EXPOSE 443 80
 
 # Start supervisord
 ENTRYPOINT ["/start.sh"]
