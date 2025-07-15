@@ -1,63 +1,65 @@
-# Use Ubuntu as the base image
 FROM ubuntu:latest
 
-# Set non-interactive mode for apt
+# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update package lists and install necessary packages
-# curl for sending webhook, tor for hidden service, caddy for reverse proxy, sudo for user switching
-# obfs4proxy is included (if needed), jq for JSON, ca-certificates for SSL
-# golang and git are required to build webtunnel from source
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl tor caddy sudo obfs4proxy jq ca-certificates \
-    python3 python3-pip git && \
-    rm -rf /var/lib/apt/lists/*
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    gnupg2 \
+    apt-transport-https \
+    ca-certificates \
+    git \
+    build-essential \
+    golang \
+    tor \
+    nginx \
+    supervisor \
+    python3 \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create directory for Tor hidden service data and set permissions
-RUN mkdir -p /var/lib/tor/hidden_service && \
-    chown -R debian-tor:debian-tor /var/lib/tor/hidden_service && \
-    chmod 700 /var/lib/tor/hidden_service
+# Install Discord webhook tool
+RUN pip3 install discord-webhook
 
-# --- Build WebTunnel Client from Source ---
-# Create a temporary directory for building
-RUN mkdir -p /tmp/build_webtunnel
-WORKDIR /tmp/build_webtunnel
+# Set up WebTunnel
+WORKDIR /opt
+RUN git clone https://gitlab.torproject.org/anti-censorship/pluggable-transports/webtunnel.git
+WORKDIR /opt/webtunnel
+RUN go build -o /usr/local/bin/webtunnel
 
-# Clone the webtunnel repository
-RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel.git .
+# Set up Tor configuration directory
+RUN mkdir -p /etc/tor/hidden_service
 
-# Navigate to the client directory and build the client executable
-# The output binary will be named 'client' by default
-RUN cd main/client && go build -o webtunnel-client
+# Create the Tor configuration file
+RUN echo "UseBridges 1" > /etc/tor/torrc && \
+    echo "ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel" >> /etc/tor/torrc && \
+    echo "SocksPort 9050" >> /etc/tor/torrc && \
+    echo "Log notice stdout" >> /etc/tor/torrc && \
+    echo "DataDirectory /var/lib/tor" >> /etc/tor/torrc && \
+    echo "HiddenServiceDir /etc/tor/hidden_service/" >> /etc/tor/torrc && \
+    echo "HiddenServicePort 80 127.0.0.1:8080" >> /etc/tor/torrc && \
+    echo "# Bridge lines will be added at runtime" >> /etc/tor/torrc
 
-# Copy the compiled client to a standard binary path (changed to /usr/bin)
-RUN cp main/client/webtunnel-client /usr/bin/webtunnel-client
+# Set up Nginx configuration
+RUN rm /etc/nginx/sites-enabled/default
+COPY nginx.conf /etc/nginx/sites-available/proxy
+RUN ln -s /etc/nginx/sites-available/proxy /etc/nginx/sites-enabled/
 
-# Clean up build artifacts
-WORKDIR /
-RUN rm -rf /tmp/build_webtunnel
+# Create script to update Tor configuration with bridges from environment variables
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# --- End WebTunnel Build ---
+# Create the keep-alive HTML page template
+COPY index.html.template /var/www/html/index.html.template
 
-# Create directory for the HTML page
-RUN mkdir -p /usr/share/caddy/html
+# Set up Supervisor configuration
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy Tor configuration (this will be a clean template)
-COPY torrc /etc/tor/torrc
-
-# Copy Caddyfile configuration
-COPY Caddyfile /etc/caddy/Caddyfile
-
-# Copy the entrypoint script
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-
-# Make the entrypoint script executable
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# Expose ports 80 (for internal Caddy, used by Tor) and 443 (for the public HTML page)
-EXPOSE 80
+# Expose port 443
 EXPOSE 443
 
-# Set the entrypoint for the container
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# Start services using Supervisor
+CMD ["/start.sh"]
