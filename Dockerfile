@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     golang-go \
     make \
     supervisor \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create directory structure
@@ -25,10 +26,10 @@ COPY bridges.txt /etc/webtunnel/bridges.txt
 # Clone and build WebTunnel
 WORKDIR /opt/webtunnel
 RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel.git . \
-    && go build -o /usr/local/bin/webtunnel ./...
+    && go build -o /usr/local/bin/webtunnel
 
 # Configure Nginx
-RUN rm /etc/nginx/sites-enabled/default
+RUN rm -f /etc/nginx/sites-enabled/default
 COPY nginx.conf /etc/nginx/sites-enabled/proxy.conf
 
 # Configure Tor
