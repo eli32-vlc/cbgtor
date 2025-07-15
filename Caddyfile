@@ -4,7 +4,7 @@
 # It reverse proxies to the target website.
 :80 {
     # Reverse proxy to the specified website
-    reverse_proxy https://censorshipbypassguide.onrender.com {
+    reverse_proxy https://censorshipbypassguide.vercel.app {
         # Pass original Host header to the backend
         # X-Forwarded-For is passed by default, so this line is redundant.
         # header_up X-Forwarded-For {http.request.remote}
