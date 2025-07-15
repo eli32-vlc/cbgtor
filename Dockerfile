@@ -9,7 +9,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 # obfs4proxy is included (if needed), jq for JSON, ca-certificates for SSL
 # golang and git are required to build webtunnel from source
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl tor caddy sudo obfs4proxy jq ca-certificates golang git && \
+    apt-get install -y --no-install-recommends \
+    curl tor caddy sudo obfs4proxy jq ca-certificates \
+    python3 python3-pip git && \
     rm -rf /var/lib/apt/lists/*
 
 # Create directory for Tor hidden service data and set permissions
@@ -29,8 +31,8 @@ RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transp
 # The output binary will be named 'client' by default
 RUN cd main/client && go build -o webtunnel-client
 
-# Copy the compiled client to a standard binary path
-RUN cp main/client/webtunnel-client /usr/local/bin/webtunnel-client
+# Copy the compiled client to a standard binary path (changed to /usr/bin)
+RUN cp main/client/webtunnel-client /usr/bin/webtunnel-client
 
 # Clean up build artifacts
 WORKDIR /
@@ -41,7 +43,7 @@ RUN rm -rf /tmp/build_webtunnel
 # Create directory for the HTML page
 RUN mkdir -p /usr/share/caddy/html
 
-# Copy Tor configuration
+# Copy Tor configuration (this will be a clean template)
 COPY torrc /etc/tor/torrc
 
 # Copy Caddyfile configuration
