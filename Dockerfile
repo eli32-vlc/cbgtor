@@ -17,10 +17,10 @@ RUN apt-get update && apt-get install -y \
 # Set up working directory
 WORKDIR /opt
 
-# Clone and build WebTunnel
+# Clone and build WebTunnel (corrected build command)
 RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel.git \
     && cd webtunnel \
-    && go build -o /usr/local/bin/webtunnel-client ./main
+    && go build -o /usr/local/bin/webtunnel-client
 
 # Create directory for Tor hidden service
 RUN mkdir -p /var/lib/tor/hidden_service/ \
