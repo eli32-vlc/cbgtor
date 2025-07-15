@@ -81,9 +81,13 @@ fi
 
 echo "Attempting to start Nginx..."
 
-# Create Nginx log and run directories if they don't exist (minimal Ubuntu might not have them by default)
+# Create Nginx log and run directories if they don't exist
 mkdir -p /var/log/nginx
 mkdir -p /var/run/nginx
+
+# Ensure Nginx user has write permissions to these directories
+chown -R nginx:nginx /var/log/nginx
+chown -R nginx:nginx /var/run/nginx
 
 # Test Nginx configuration before starting
 echo "Testing Nginx configuration..."
@@ -95,6 +99,8 @@ fi
 echo "Nginx configuration test passed."
 
 echo "Setup complete. Starting Nginx in foreground to keep container alive."
+# Enable shell tracing for the exec command to see more details if it fails
+set -x
 # Start Nginx in the foreground. This command will replace the current shell
 # process, ensuring Nginx is the primary process of the Docker container.
 # Nginx will listen on port 443 for the public keep-alive page and on 127.0.0.1:8080
