@@ -1,14 +1,15 @@
+# Default Tor configuration
 DataDirectory /var/lib/tor
-RunAsDaemon 0
+RunAsDaemon 1
 ControlPort 9051
+CookieAuthentication 1
+Log notice stdout
 
-# Use bridges (will be configured at runtime)
-UseBridges 1
-ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
-
-# Hidden service configuration
+# Hidden Service configuration
 HiddenServiceDir /var/lib/tor/hidden_service/
 HiddenServicePort 80 127.0.0.1:80
+HiddenServicePort 443 127.0.0.1:443
 
-# Log configuration
-Log notice stdout
+# WebTunnel bridge configuration
+UseBridges 1
+ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel-client

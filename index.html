@@ -7,16 +7,12 @@
     <body>
         <h1>Tor Hidden Service</h1>
         <p>Onion address: <span id="onion-address">Loading...</span></p>
+        <p>This is a simple keep-alive page for the Tor hidden service.</p>
         <script>
             fetch("/onion-address.txt")
                 .then((response) => response.text())
-                .then((address) => {
-                    document.getElementById("onion-address").textContent =
-                        address;
-                })
-                .catch((error) => {
-                    document.getElementById("onion-address").textContent =
-                        "Error loading onion address";
+                .then((text) => {
+                    document.getElementById("onion-address").textContent = text;
                 });
         </script>
     </body>
