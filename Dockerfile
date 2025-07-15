@@ -5,9 +5,9 @@ FROM ubuntu:latest
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package lists and install necessary packages
-# curl for sending webhook, tor for hidden service, caddy for reverse proxy
+# curl for sending webhook, tor for hidden service, caddy for reverse proxy, sudo for user switching
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl tor caddy && \
+    apt-get install -y --no-install-recommends curl tor caddy sudo && \
     rm -rf /var/lib/apt/lists/*
 
 # Create directory for Tor hidden service data and set permissions
