@@ -16,8 +16,9 @@
 # It will listen on the port provided by Render's environment variable (e.g., 8080).
 # Render handles public HTTPS termination, so Caddy should listen on HTTP internally.
 :{$PORT} {
-    # Explicitly disable TLS for this listener. Render handles HTTPS externally.
-    tls off
+    # Removed 'tls off' as it was causing a parsing error.
+    # Caddy will default to serving HTTP on this port when no 'tls' directive is present,
+    # which is what Render expects for internal communication.
     # Serve files from the /usr/share/caddy/html directory
     root * /usr/share/caddy/html
     file_server
