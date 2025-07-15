@@ -26,6 +26,10 @@ Log notice file /var/log/tor/notices.log
 # even if their internet service provider or government is trying to block direct Tor connections.
 UseBridges 1
 
+# Specifies the path to the webtunnel client executable.
+# This tells Tor where to find the pluggable transport to use webtunnel bridges.
+ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel-client
+
 # Add webtunnel bridges
 # IMPORTANT: The bridge addresses and URLs provided here are examples.
 # Bridges can become blocked or change over time. For a production service,
