@@ -11,8 +11,10 @@ ClientTransportPlugin webtunnel exec /usr/local/bin/client
 # Enable the use of bridges to connect to the Tor network
 UseBridges 1
 
-# Specify the file containing the WebTunnel bridge lines
-BridgeFile /etc/tor/webtunnel_bridges.txt
+# Hardcoded WebTunnel bridge lines (moved from webtunnel_bridges.txt)
+# These are directly included in torrc as BridgeFile is deprecated/unsupported.
+Bridge webtunnel [2001:db8:b260:52a8:6a2:a93a:6c69:8fcb]:443 2307A05F4EA0E8E215100D3934157213E564AE7E url=https://z.igrp.site/eg9PbqaxSvIbjtbVZMt9H7xF ver=0.0.1
+Bridge webtunnel [2001:db8:75db:c6f2:1dae:121:7a04:9e9d]:443 4B673DF159CFC12AC91FC2E6AC3047FF2183FCEA url=http://freifunk.ckgc.de/xBKEzZunnc3A5pcf6jaeVyPL ver=0.0.1
 
 # Hidden Service configuration
 # HiddenServiceDir specifies the directory where Tor will store the hidden service keys and hostname.
