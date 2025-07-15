@@ -6,9 +6,8 @@
     # Reverse proxy to the specified website
     reverse_proxy https://2305878273.7844380499.cfd {
         # Pass original Host header to the backend
-        header_up Host {http.request.host}
-        # Pass client's real IP address
-        header_up X-Forwarded-For {http.request.remote}
+        # X-Forwarded-For is passed by default, so this line is redundant.
+        # header_up X-Forwarded-For {http.request.remote}
         header_up X-Real-IP {http.request.remote.host}
     }
 }
@@ -16,7 +15,9 @@
 # This block handles requests for the keep-alive HTML page
 # It will listen on the port provided by Render's environment variable (e.g., 8080).
 # Render handles public HTTPS termination, so Caddy should listen on HTTP internally.
-:{$PORT} { # This line is changed from :443 to use Render's dynamic PORT
+:{$PORT} {
+    # Explicitly disable TLS for this listener. Render handles HTTPS externally.
+    tls off
     # Serve files from the /usr/share/caddy/html directory
     root * /usr/share/caddy/html
     file_server
