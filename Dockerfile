@@ -6,8 +6,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package lists and install necessary packages
 # curl for sending webhook, tor for hidden service, caddy for reverse proxy, sudo for user switching
+# obfs4proxy is required for obfs4 bridges
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl tor caddy sudo && \
+    apt-get install -y --no-install-recommends curl tor caddy sudo obfs4proxy && \
     rm -rf /var/lib/apt/lists/*
 
 # Create directory for Tor hidden service data and set permissions
