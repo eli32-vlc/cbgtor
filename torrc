@@ -1,4 +1,4 @@
-# Tor configuration file for a hidden service with obfs4 bridges.
+# Tor configuration file for a hidden service with webtunnel bridges.
 # This file defines how Tor should operate for this specific service.
 
 # --- Hidden Service Configuration ---
@@ -26,16 +26,12 @@ Log notice file /var/log/tor/notices.log
 # even if their internet service provider or government is trying to block direct Tor connections.
 UseBridges 1
 
-# Specifies the obfs4 bridges to use. obfs4 is a pluggable transport that
-# makes Tor traffic look like uninteresting, random data to deep packet inspection.
-# Each line defines one bridge:
-# Format: Bridge <transport_type> <IP_address>:<Port> <Fingerprint> cert=<certificate> iat-mode=<mode>
-#
-# IMPORTANT: The bridge addresses and certificates provided here are examples.
+# Add webtunnel bridges
+# IMPORTANT: The bridge addresses and URLs provided here are examples.
 # Bridges can become blocked or change over time. For a production service,
 # it is highly recommended to obtain fresh, unblocked bridges from:
 # - BridgeDB: https://bridges.torproject.org/
 # - Email: Send an email to bridges@torproject.org from a Gmail, Riseup, or Yahoo email account.
 #
-Bridge obfs4 192.9.173.139:6970 30C2B201652AF9F2D14EBAEBDEA4D69171C63C02 cert=O+1n4Sbo/Lk18gjfTieAYqFjB5GDDkEY+nn3BqxZsyWz9qH/Z40nChs9QsccOOSoxlEtcA iat-mode=0
-Bridge obfs4 71.126.188.76:8671 CDD7C9A4EB4115F2157508749F2D0A6B353EA2E7 cert=quBdxbIn/PPgQfWObOLbT+m9E6yDFHFLqtxzFuaX+Z7E9XTviN3wtj+U3OddYXtPJhygJA iat-mode=0
+Bridge webtunnel [2001:db8:b260:52a8:6a2:a93a:6c69:8fcb]:443 2307A05F4EA0E8E215100D3934157213E564AE7E url=https://z.igrp.site/eg9PbqaxSvIbjtbVZMt9H7xF ver=0.0.1
+Bridge webtunnel [2001:db8:75db:c6f2:1dae:121:7a04:9e9d]:443 4B673DF159CFC12AC91FC2E6AC3047FF2183FCEA url=http://freifunk.ckgc.de/xBKEzZunnc3A5pcf6jaeVyPL ver=0.0.1
