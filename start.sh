@@ -30,8 +30,11 @@ sed "s/ONION_ADDRESS/$ONION_ADDRESS/g" /var/www/html/index.html.template > /var/
 
 # Send the onion address to Discord webhook if the webhook URL is provided
 if [ -n "$DISCORD_WEBHOOK_URL" ]; then
-    python3 -c "from discord_webhook import DiscordWebhook; webhook = DiscordWebhook(url='$DISCORD_WEBHOOK_URL', content='Tor Hidden Service is ready. Onion address: $ONION_ADDRESS'); webhook.execute()"
-    echo "Sent onion address to Discord webhook"
+    # Using curl to send the Discord webhook
+    curl -H "Content-Type: application/json" \
+         -d "{\"content\":\"Tor Hidden Service is ready. Onion address: $ONION_ADDRESS\"}" \
+         "$DISCORD_WEBHOOK_URL"
+    echo "Sent onion address to Discord webhook using curl"
 fi
 
 # Start nginx

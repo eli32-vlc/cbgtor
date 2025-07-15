@@ -16,13 +16,8 @@ RUN apt-get update && apt-get install -y \
     tor \
     nginx \
     supervisor \
-    python3 \
-    python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Discord webhook tool
-RUN pip3 install discord-webhook
 
 # Set up WebTunnel
 WORKDIR /opt
