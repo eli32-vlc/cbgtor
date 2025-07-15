@@ -1,21 +1,45 @@
 #!/bin/bash
 
 # This script initializes Tor, retrieves the onion address,
-# sends it to a Discord webhook, generates an HTML page, and starts Caddy.
+# sends it to a Discord webhook, dynamically injects webtunnel bridge lines,
+# generates a simple HTML page displaying the onion address, and starts Caddy.
 
 # --- Configuration ---
 # Read Discord webhook URL from environment variable
-# If not set, default to an empty string (or a placeholder)
-DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}" # Use :- to default to empty if not set
+DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}"
+
+# Read webtunnel bridges from environment variable
+WEBTUNNEL_BRIDGES="${WEBTUNNEL_BRIDGES:-}"
 
 ONION_HOSTNAME_FILE="/var/lib/tor/hidden_service/hostname"
+TORRC_FILE="/etc/tor/torrc" # Path to your torrc file
 HTML_DIR="/usr/share/caddy/html"
 HTML_FILE="${HTML_DIR}/index.html"
+
+# --- Inject Bridges into torrc ---
+echo "Processing webtunnel bridges from environment variable..."
+if [ -z "$WEBTUNNEL_BRIDGES" ]; then
+    echo "WARNING: WEBTUNNEL_BRIDGES environment variable is not set. Tor will attempt to connect without bridges (unlikely to work in censored environments)."
+else
+    # Split the comma-separated bridge string and append to torrc
+    # Ensure the torrc file exists and is writable by this script
+    if [ ! -f "$TORRC_FILE" ]; then
+        echo "Error: torrc file not found at $TORRC_FILE. Cannot inject bridges."
+        exit 1
+    fi
+
+    IFS=',' read -ra ADDR <<< "$WEBTUNNEL_BRIDGES"
+    for i in "${ADDR[@]}"; do
+        echo "Adding bridge: $i"
+        echo "$i" >> "$TORRC_FILE"
+    done
+    echo "Webtunnel bridges added to $TORRC_FILE."
+fi
 
 # --- Start Tor ---
 echo "Starting Tor in the background..."
 # Run Tor as the debian-tor user, in the background, with the specified config file
-sudo -u debian-tor tor -f /etc/tor/torrc &
+sudo -u debian-tor tor -f "$TORRC_FILE" &
 TOR_PID=$! # Store Tor's process ID
 
 # --- Wait for Onion Address ---
