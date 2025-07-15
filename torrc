@@ -1,10 +1,42 @@
-# Tor configuration for a hidden service
+# Tor configuration file for a hidden service with obfs4 bridges.
+# This file defines how Tor should operate for this specific service.
 
-# Data directory for the hidden service
+# --- Hidden Service Configuration ---
+# Specifies the directory where Tor will store its hidden service data,
+# including the private keys and the 'hostname' file containing the .onion address.
+# This directory must have strict permissions (700) and be owned by the 'debian-tor' user.
 HiddenServiceDir /var/lib/tor/hidden_service/
 
-# Map the hidden service's port 80 to the Caddy server running on localhost:80 inside the container
+# Defines a hidden service port mapping.
+# It maps the external port 80 of the .onion address to the internal
+# address and port (127.0.0.1:80) within the Docker container.
+# This means traffic arriving at the hidden service's port 80 will be
+# forwarded to Caddy, which is listening on 127.0.0.1:80 inside the container.
 HiddenServicePort 80 127.0.0.1:80
 
-# Log level for Tor (optional, can be adjusted for debugging)
+# --- Logging Configuration ---
+# Sets the logging level to 'notice' and directs logs to a file.
+# This can be useful for debugging Tor's operation.
+# Other levels include 'debug', 'info', 'warn', 'err'.
 Log notice file /var/log/tor/notices.log
+
+# --- Bridge Configuration (for Circumvention/Obscurity) ---
+# Enables the use of Tor bridges. Bridges are unlisted Tor relays that help
+# users (or hidden services, in this case) connect to the Tor network
+# even if their internet service provider or government is trying to block direct Tor connections.
+UseBridges 1
+
+# Specifies the obfs4 bridges to use. obfs4 is a pluggable transport that
+# makes Tor traffic look like uninteresting, random data to deep packet inspection.
+# Each line defines one bridge:
+# Format: Bridge <transport_type> <IP_address>:<Port> <Fingerprint> cert=<certificate> iat-mode=<mode>
+#
+# IMPORTANT: The bridge addresses and certificates provided here are examples.
+# Bridges can become blocked or change over time. For a production service,
+# it is highly recommended to obtain fresh, unblocked bridges from:
+# - BridgeDB: https://bridges.torproject.org/
+# - Email: Send an email to bridges@torproject.org from a Gmail, Riseup, or Yahoo email account.
+#
+Bridge obfs4 192.9.173.139:6970 30C2B201652AF9F2D14EBAEBDEA4D69171C63C02 cert=O+1n4Sbo/Lk18gjfTieAYqFjB5GDDkEY+nn3BqxZsyWz9qH/Z40nChs9QsccOOSoxlEtcA iat-mode=0
+Bridge obfs4 71.126.188.76:8671 CDD7C9A4EB4115F2157508749F2D0A6B353EA2E7 cert=quBdxbIn/PPgQfWObOLbT+m9E6yDFHFLqtxzFuaX+Z7E9XTviN3wtj+U3OddYXtPJhygJA iat-mode=0
+
