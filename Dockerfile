@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Create directory structure with correct permissions
 RUN mkdir -p /var/lib/tor && \
     mkdir -p /etc/webtunnel
-    # DO NOT create hidden_service directory here - let Tor create it with correct permissions
 
 # Set up WebTunnel bridges file
 COPY bridges.txt /etc/webtunnel/bridges.txt
