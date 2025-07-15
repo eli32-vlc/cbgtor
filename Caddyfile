@@ -13,11 +13,10 @@
     }
 }
 
-# This block handles requests on port 443 for the keep-alive HTML page
-# Caddy will automatically handle HTTPS for this if a domain is provided,
-# but for a simple IP-based exposure, it will serve plain HTTP or require manual certs.
-# For this example, it will serve the HTML page on port 443.
-:443 {
+# This block handles requests for the keep-alive HTML page
+# It will listen on the port provided by Render's environment variable (e.g., 8080).
+# Render handles public HTTPS termination, so Caddy should listen on HTTP internally.
+:{$PORT} { # This line is changed from :443 to use Render's dynamic PORT
     # Serve files from the /usr/share/caddy/html directory
     root * /usr/share/caddy/html
     file_server
