@@ -4,6 +4,10 @@ DataDirectory /var/lib/tor
 # Log file for Tor notices
 Log notice file /var/log/tor/notices.log
 
+# Configure Tor to run as the debian-tor user.
+# This is crucial for correct permissions with the hidden service directory.
+User debian-tor
+
 # Configure the WebTunnel client as a pluggable transport
 # 'webtunnel' is the name of the transport, 'exec /usr/local/bin/client' specifies the path to the client binary.
 ClientTransportPlugin webtunnel exec /usr/local/bin/client
