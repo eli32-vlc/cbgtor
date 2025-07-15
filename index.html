@@ -2,18 +2,10 @@
 <html>
     <head>
         <title>Tor Hidden Service</title>
-        <meta charset="UTF-8" />
     </head>
     <body>
-        <h1>Tor Hidden Service</h1>
+        <h1>Welcome to the Tor Hidden Service</h1>
         <p>Onion address: <span id="onion-address">Loading...</span></p>
-        <p>This is a simple keep-alive page for the Tor hidden service.</p>
-        <script>
-            fetch("/onion-address.txt")
-                .then((response) => response.text())
-                .then((text) => {
-                    document.getElementById("onion-address").textContent = text;
-                });
-        </script>
+        <p>This is a simple keep-alive page.</p>
     </body>
 </html>

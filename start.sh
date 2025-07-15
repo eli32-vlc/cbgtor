@@ -1,47 +1,33 @@
 #!/bin/bash
-set -e
 
-# Create self-signed SSL certificate for Nginx
-mkdir -p /etc/nginx/ssl
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/nginx/ssl/server.key \
-    -out /etc/nginx/ssl/server.crt \
-    -subj "/C=US/ST=State/L=City/O=Organization/CN=example.com"
-
-# Update torrc with bridges from environment variables
-if [ -n "$TOR_BRIDGE1" ]; then
-    echo "Bridge $TOR_BRIDGE1" >> /etc/tor/torrc
-fi
-
-if [ -n "$TOR_BRIDGE2" ]; then
-    echo "Bridge $TOR_BRIDGE2" >> /etc/tor/torrc
-fi
-
-# Start Nginx
-service nginx start
-
-# Start Tor
-service tor start
-
-# Wait for hidden service to be created
+# Wait for Tor to generate the hidden service
 while [ ! -f /var/lib/tor/hidden_service/hostname ]; do
-    echo "Waiting for Tor hidden service to be created..."
-    sleep 5
+  echo "Waiting for Tor hidden service to be ready..."
+  sleep 5
 done
 
-# Get onion address
+# Get the onion address
 ONION_ADDRESS=$(cat /var/lib/tor/hidden_service/hostname)
-echo "Onion address: $ONION_ADDRESS"
 
-# Write onion address to file for the web page
-echo "$ONION_ADDRESS" > /var/www/html/onion-address.txt
+# Update the HTML file with the onion address
+sed -i "s/Loading.../$ONION_ADDRESS/g" /var/www/html/index.html
 
-# Send onion address to Discord webhook if URL is provided
-if [ -n "$DISCORD_WEBHOOK_URL" ]; then
-    curl -H "Content-Type: application/json" \
-         -d "{\"content\": \"Tor hidden service is now available at: $ONION_ADDRESS\"}" \
-         "$DISCORD_WEBHOOK_URL"
+# Send the onion address to the Discord webhook
+if [ ! -z "$DISCORD_WEBHOOK_URL" ]; then
+  echo "Sending onion address to Discord webhook..."
+  curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"Tor Hidden Service is online: $ONION_ADDRESS\"}" $DISCORD_WEBHOOK_URL
+else
+  echo "DISCORD_WEBHOOK_URL not set, skipping webhook notification."
 fi
 
-# Keep container running
-tail -f /dev/null
+# Create SSL certificate if needed
+if [ ! -f /etc/ssl/certs/ssl-cert-snakeoil.pem ]; then
+  echo "Generating self-signed SSL certificate..."
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/ssl-cert-snakeoil.key \
+    -out /etc/ssl/certs/ssl-cert-snakeoil.pem \
+    -subj "/CN=localhost"
+fi
+
+echo "Setup complete!"
+exit 0

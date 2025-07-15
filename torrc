@@ -1,15 +1,18 @@
-# Default Tor configuration
+SocksPort 9050
 DataDirectory /var/lib/tor
-RunAsDaemon 1
-ControlPort 9051
-CookieAuthentication 1
-Log notice stdout
 
-# Hidden Service configuration
-HiddenServiceDir /var/lib/tor/hidden_service/
-HiddenServicePort 80 127.0.0.1:80
-HiddenServicePort 443 127.0.0.1:443
-
-# WebTunnel bridge configuration
+# Use WebTunnel bridges
 UseBridges 1
-ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel-client
+ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel
+Bridge webtunnel [2001:db8:b260:52a8:6a2:a93a:6c69:8fcb]:443 2307A05F4EA0E8E215100D3934157213E564AE7E url=https://z.igrp.site/eg9PbqaxSvIbjtbVZMt9H7xF ver=0.0.1
+Bridge webtunnel [2001:db8:75db:c6f2:1dae:121:7a04:9e9d]:443 4B673DF159CFC12AC91FC2E6AC3047FF2183FCEA url=http://freifunk.ckgc.de/xBKEzZunnc3A5pcf6jaeVyPL ver=0.0.1
+
+# Fix "No more HSDir available to query" issue
+CircuitBuildTimeout 60
+NumEntryGuards 8
+NumDirectoryGuards 8
+
+# Hidden Service Configuration
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 localhost:80
+HiddenServiceVersion 3
