@@ -79,6 +79,21 @@ else
     echo "DISCORD_WEBHOOK_URL environment variable not set. Skipping Discord webhook."
 fi
 
+echo "Attempting to start Nginx..."
+
+# Create Nginx log and run directories if they don't exist (minimal Ubuntu might not have them by default)
+mkdir -p /var/log/nginx
+mkdir -p /var/run/nginx
+
+# Test Nginx configuration before starting
+echo "Testing Nginx configuration..."
+nginx -t
+if [ $? -ne 0 ]; then
+    echo "Error: Nginx configuration test failed. Check nginx.conf for syntax errors."
+    exit 1
+fi
+echo "Nginx configuration test passed."
+
 echo "Setup complete. Starting Nginx in foreground to keep container alive."
 # Start Nginx in the foreground. This command will replace the current shell
 # process, ensuring Nginx is the primary process of the Docker container.
