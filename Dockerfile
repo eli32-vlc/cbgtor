@@ -15,10 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create directory structure
-RUN mkdir -p /var/lib/tor/hidden_service/ \
-    && mkdir -p /opt/webtunnel \
-    && mkdir -p /etc/webtunnel
+# Create directory structure with correct permissions
+RUN mkdir -p /var/lib/tor && \
+    mkdir -p /etc/webtunnel && \
+    # DO NOT create hidden_service directory here - let Tor create it with correct permissions
 
 # Set up WebTunnel bridges file
 COPY bridges.txt /etc/webtunnel/bridges.txt
@@ -28,9 +28,9 @@ WORKDIR /opt/webtunnel
 RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel.git . \
     && go build -o /usr/local/bin/webtunnel
 
-# Configure Nginx
+# Configure Nginx - we'll use a template first and generate the actual config during startup
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
 RUN rm -f /etc/nginx/sites-enabled/default
-COPY nginx.conf /etc/nginx/sites-enabled/proxy.conf
 
 # Configure Tor
 COPY torrc /etc/tor/torrc
@@ -38,7 +38,7 @@ COPY torrc /etc/tor/torrc
 # Set up the simple HTML page
 COPY index.html /var/www/html/index.html
 
-# Startup script
+# Create SSL certificates and ensure proper startup sequence
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
@@ -48,5 +48,5 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Expose ports
 EXPOSE 443
 
-# Set entrypoint
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start supervisord
+ENTRYPOINT ["/start.sh"]
