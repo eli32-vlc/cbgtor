@@ -16,18 +16,24 @@ TORRC_FILE="/etc/tor/torrc" # Path to your torrc file
 HTML_DIR="/usr/share/caddy/html"
 HTML_FILE="${HTML_DIR}/index.html"
 
+# --- Prepare torrc with ClientTransportPlugin ---
+# Ensure the torrc file exists and is writable by this script
+if [ ! -f "$TORRC_FILE" ]; then
+    echo "Error: torrc file not found at $TORRC_FILE. Cannot prepare torrc."
+    exit 1
+fi
+
+# Add the ClientTransportPlugin line to torrc
+# This must be present for Tor to understand 'webtunnel' bridges
+echo "ClientTransportPlugin webtunnel exec /usr/local/bin/webtunnel-client" >> "$TORRC_FILE"
+echo "Added ClientTransportPlugin to $TORRC_FILE."
+
 # --- Inject Bridges into torrc ---
 echo "Processing webtunnel bridges from environment variable..."
 if [ -z "$WEBTUNNEL_BRIDGES" ]; then
     echo "WARNING: WEBTUNNEL_BRIDGES environment variable is not set. Tor will attempt to connect without bridges (unlikely to work in censored environments)."
 else
     # Split the comma-separated bridge string and append to torrc
-    # Ensure the torrc file exists and is writable by this script
-    if [ ! -f "$TORRC_FILE" ]; then
-        echo "Error: torrc file not found at $TORRC_FILE. Cannot inject bridges."
-        exit 1
-    fi
-
     IFS=',' read -ra ADDR <<< "$WEBTUNNEL_BRIDGES"
     for i in "${ADDR[@]}"; do
         echo "Adding bridge: $i"
