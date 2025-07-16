@@ -30,20 +30,19 @@ RUN mkdir -p /var/lib/tor_data && \
     mkdir -p /var/www/html && \
     mkdir -p /etc/nginx/ssl
 
-# Create the simple HTML page showing the onion address
-COPY index.html.template /var/www/html/index.html.template
-
 # Generate SSL certificate for Nginx
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/nginx.key \
     -out /etc/nginx/ssl/nginx.crt \
     -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost"
 
-# Configure Nginx with reverse proxy settings
+# Create the simple HTML page template
+COPY index.html.template /var/www/html/index.html.template
+
+# Configure Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY reverse-proxy.conf /etc/nginx/sites-available/reverse-proxy.conf
-RUN ln -s /etc/nginx/sites-available/reverse-proxy.conf /etc/nginx/sites-enabled/ \
-    && rm -f /etc/nginx/sites-enabled/default
+COPY site.conf /etc/nginx/sites-available/default
+RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 # Configure Tor
 COPY torrc /etc/tor/torrc
@@ -56,7 +55,7 @@ RUN chmod +x /app/start.sh
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose ports
-EXPOSE 443
+EXPOSE 80 443
 
 # Start services using supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

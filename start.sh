@@ -8,8 +8,7 @@ while [ ! -f /var/lib/tor_data/hidden_service/hostname ]; do
   if [ $SECONDS -gt 60 ]; then
     echo "Timed out waiting for Tor hidden service. Checking Tor status..."
     ps aux | grep tor
-    cat /var/log/tor/log || echo "No tor log found"
-    # Continue anyway after logging debug info
+    echo "Continuing anyway..."
     break
   fi
 done
