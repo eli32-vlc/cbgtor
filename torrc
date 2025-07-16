@@ -1,5 +1,5 @@
 SocksPort 9050
-DataDirectory /var/lib/tor
+DataDirectory /var/lib/tor_data
 
 # Set WebTunnel as a client transport plugin
 ClientTransportPlugin webtunnel exec /app/webtunnel/client
@@ -9,7 +9,7 @@ Bridge webtunnel [2001:db8:b260:52a8:6a2:a93a:6c69:8fcb]:443 2307A05F4EA0E8E2151
 Bridge webtunnel [2001:db8:75db:c6f2:1dae:121:7a04:9e9d]:443 4B673DF159CFC12AC91FC2E6AC3047FF2183FCEA url=http://freifunk.ckgc.de/xBKEzZunnc3A5pcf6jaeVyPL ver=0.0.1
 
 # Hidden service configuration
-HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServiceDir /var/lib/tor_data/hidden_service/
 HiddenServicePort 80 127.0.0.1:80
 
 # Log info
