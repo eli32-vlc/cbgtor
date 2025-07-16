@@ -42,8 +42,10 @@ COPY index.html.template /var/www/html/index.html.template
 # Configure Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY site.conf /etc/nginx/sites-available/default
-# Using -f to force the symlink creation even if it already exists
-RUN rm -f /etc/nginx/sites-enabled/default && ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+COPY tor-site.conf /etc/nginx/sites-available/tor-site
+RUN rm -f /etc/nginx/sites-enabled/default && \
+    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default && \
+    ln -sf /etc/nginx/sites-available/tor-site /etc/nginx/sites-enabled/tor-site
 
 # Configure Tor
 COPY torrc /etc/tor/torrc

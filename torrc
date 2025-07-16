@@ -1,9 +1,9 @@
 SocksPort 9050
 DataDirectory /var/lib/tor_data
 
-# Hidden service configuration - point to port 80 which Nginx will listen on
+# Hidden service configuration - point to the Nginx reverse proxy server
 HiddenServiceDir /var/lib/tor_data/hidden_service/
-HiddenServicePort 80 127.0.0.1:80
+HiddenServicePort 80 127.0.0.1:8080
 
 # Set WebTunnel as a client transport plugin
 ClientTransportPlugin webtunnel exec /app/webtunnel/client
