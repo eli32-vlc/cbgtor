@@ -1,30 +1,16 @@
-# Tor data directory for storing keys, state, etc.
+SocksPort 9050
 DataDirectory /var/lib/tor
 
-# Log file for Tor notices
-Log notice file /var/log/tor/notices.log
+# Set WebTunnel as a client transport plugin
+ClientTransportPlugin webtunnel exec /app/webtunnel/client
 
-# Configure Tor to run as the debian-tor user.
-# This is crucial for correct permissions with the hidden service directory.
-User debian-tor
+# Define the bridges
+webtunnel [2001:db8:b260:52a8:6a2:a93a:6c69:8fcb]:443 2307A05F4EA0E8E215100D3934157213E564AE7E url=https://z.igrp.site/eg9PbqaxSvIbjtbVZMt9H7xF ver=0.0.1
+webtunnel [2001:db8:75db:c6f2:1dae:121:7a04:9e9d]:443 4B673DF159CFC12AC91FC2E6AC3047FF2183FCEA url=http://freifunk.ckgc.de/xBKEzZunnc3A5pcf6jaeVyPL ver=0.0.1
 
-# Configure the WebTunnel client as a pluggable transport
-# 'webtunnel' is the name of the transport, 'exec /usr/local/bin/client' specifies the path to the client binary.
-ClientTransportPlugin webtunnel exec /usr/local/bin/client
+# Hidden service configuration
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 127.0.0.1:80
 
-# Enable the use of bridges to connect to the Tor network
-UseBridges 1
-
-# Hardcoded WebTunnel bridge lines (moved from webtunnel_bridges.txt)
-# These are directly included in torrc as BridgeFile is deprecated/unsupported.
-Bridge webtunnel [2001:db8:b260:52a8:6a2:a93a:6c69:8fcb]:443 2307A05F4EA0E8E215100D3934157213E564AE7E url=https://z.igrp.site/eg9PbqaxSvIbjtbVZMt9H7xF ver=0.0.1
-Bridge webtunnel [2001:db8:75db:c6f2:1dae:121:7a04:9e9d]:443 4B673DF159CFC12AC91FC2E6AC3047FF2183FCEA url=http://freifunk.ckgc.de/xBKEzZunnc3A5pcf6jaeVyPL ver=0.0.1
-
-# Hidden Service configuration
-# HiddenServiceDir specifies the directory where Tor will store the hidden service keys and hostname.
-HiddenServiceDir /var/lib/tor/hidden_service
-
-# HiddenServicePort maps a virtual port on the hidden service to a physical port on the local machine.
-# Here, hidden service port 80 (standard HTTP) is mapped to localhost port 8080,
-# which is where Nginx will be listening for hidden service traffic.
-HiddenServicePort 80 127.0.0.1:8080
+# Log info
+Log notice stdout

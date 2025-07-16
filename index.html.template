@@ -1,42 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tor Hidden Service</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            line-height: 1.6;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-        }
-        .onion-address {
-            background-color: #f0f0f0;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 1.2em;
-            word-break: break-all;
-        }
-    </style>
+    <title>Tor Hidden Service Information</title>
+    <meta charset="UTF-8">
 </head>
 <body>
-    <div class="container">
-        <h1>Tor Hidden Service</h1>
-        <p>This server is running a Tor hidden service. You can access it using the Tor Browser at the following onion address:</p>
-        <div class="onion-address">
-            <strong>ONION_ADDRESS</strong>
-        </div>
-    </div>
+    <h1>Tor Hidden Service Information</h1>
+    <p>This service is available as a Tor Hidden Service at:</p>
+    <h2>ONION_ADDRESS</h2>
+    <p>You can access it using the Tor Browser.</p>
 </body>
 </html>
