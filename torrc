@@ -1,16 +1,36 @@
+# Basic Tor configuration
 SocksPort 9050
 DataDirectory /var/lib/tor_data
 
-# Hidden service configuration - point to the Nginx reverse proxy server
+# Use only bridges (never connect to public Tor directory)
+UseBridges 1
+
+# Hidden service configuration
 HiddenServiceDir /var/lib/tor_data/hidden_service/
 HiddenServicePort 80 127.0.0.1:8080
 
-# Set WebTunnel as a client transport plugin
+# WebTunnel pluggable transport
 ClientTransportPlugin webtunnel exec /app/webtunnel/client
 
-# Define the bridges
+# Bridges - primary
 Bridge webtunnel [2001:db8:b260:52a8:6a2:a93a:6c69:8fcb]:443 2307A05F4EA0E8E215100D3934157213E564AE7E url=https://z.igrp.site/eg9PbqaxSvIbjtbVZMt9H7xF ver=0.0.1
 Bridge webtunnel [2001:db8:75db:c6f2:1dae:121:7a04:9e9d]:443 4B673DF159CFC12AC91FC2E6AC3047FF2183FCEA url=http://freifunk.ckgc.de/xBKEzZunnc3A5pcf6jaeVyPL ver=0.0.1
 
-# Log info
-Log notice stdout
+# Logging - notice level to stdout for supervisor
+Log notice file /var/log/tor/notices.log
+Log warn file /var/log/tor/warn.log
+
+# Circuit building settings
+CircuitBuildTimeout 60
+LearnCircuitBuildTimeout 1
+MaxCircuitDirtiness 600
+
+# Reduced circuit creation for stealth
+ClientOnly 1
+
+# Avoid directory fetches that could fingerprint
+DirReqStatistics 0
+ExitPortStatistics 0
+EntryStatistics 0
+ConnDirectionStatistics 0
+ExtendedStatistics 0

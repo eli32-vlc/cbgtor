@@ -1,13 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Tor Hidden Service Information</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Status</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 32px;
+            border: 1px solid #333;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 16px; color: #fff; }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: #0a3d0a;
+            color: #4ade80;
+            margin-bottom: 20px;
+        }
+        .onion-box {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            word-break: break-all;
+            font-size: 0.9rem;
+            color: #4ade80;
+        }
+        .info { color: #888; font-size: 0.875rem; margin-top: 20px; }
+        .info code {
+            background: #222;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+    </style>
+    <script>
+        // Auto-refresh every 60 seconds until onion address is loaded
+        setInterval(function() {
+            var addr = document.getElementById('onion-address').textContent;
+            if (addr.includes('Loading') || addr.includes('initializing')) {
+                location.reload();
+            }
+        }, 60000);
+    </script>
 </head>
 <body>
-    <h1>Tor Hidden Service Information</h1>
-    <p>This service is available as a Tor Hidden Service at:</p>
-    <h2>ONION_ADDRESS</h2>
-    <p>You can access it using the Tor Browser.</p>
+    <div class="container">
+        <h1>Service Status</h1>
+        <div class="status">Online</div>
+        <p style="color: #888;">Your Tor Hidden Service address:</p>
+        <div class="onion-box" id="onion-address">ONION_ADDRESS</div>
+        <div class="info">
+            <p>Access this service using the <a href="https://www.torproject.org/" style="color: #4ade80;">Tor Browser</a>.</p>
+            <p style="margin-top: 8px;">Target: <code>TARGET_URL_PLACEHOLDER</code></p>
+        </div>
+    </div>
 </body>
 </html>
